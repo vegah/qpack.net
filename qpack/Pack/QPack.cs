@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Fantasista
 {
-    public class QPack
+    public static partial class QPack
     {
         public static byte[] Pack(object o)
         {
@@ -57,7 +57,6 @@ namespace Fantasista
             else bytes.Add((byte)(0xf3+length));
             foreach (var element in o.Keys)
             {
-                Console.WriteLine("Hei");
                 bytes.AddRange(Pack(element));
                 bytes.AddRange(Pack(o[element]));
             }
