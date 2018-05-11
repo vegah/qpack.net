@@ -6,29 +6,90 @@ namespace Fantasista
 {
     public  static partial class QPack
     {
-        public static object Unpack(IEnumerable<byte> bytes)
+        public static object Unpack(byte[] bytes) 
         {
-            var first = bytes.First();
+            var info = Unpack(bytes,new UnpackInformation());
+            return info.Values.Last();
+        }
+        private static UnpackInformation Unpack(byte[] bytes, UnpackInformation info)
+        {
+            var first = bytes[info.Position];
+
+            info.Position++;
             if (first<=0x7b || (first>=0xe8 && first<=0xeb))
-                return UnpackInt(first, bytes); 
-            return null;
+                UnpackInt(first, bytes,info); 
+            else if (first==0xec)
+                UnpackFloat(first,bytes,info);
+            else if (first==0x7c || first==0xfb)
+                UnpackSpecial(first,bytes,info);
+            else if (first>=0x80 && first<=0xe3)
+                UnpackString(first,bytes,info);
+            else if (first>=0xf3 && first<=0xf8)
+                UnpackMap(first,bytes,info);
+            return info;
         }
 
-        private static object UnpackInt(byte first, IEnumerable<byte> bytes)
+        private static void UnpackMap(byte first,byte[] bytes,UnpackInformation info)
+        {
+            var map = new Dictionary<string,string>();
+            var length = first-243;
+            for (var i=0;i<length;i++)
+            {
+                UnpackMapElement(bytes,info,map);
+            }
+            info.Values.Add(map);
+        }
+
+        private static void UnpackMapElement(byte[] bytes,UnpackInformation info,IDictionary<string,string> map)
+        {
+            var key = Unpack(bytes,info).Values.Last();
+            var value = Unpack(bytes,info).Values.Last();
+            map.Add(key.ToString(),value.ToString());
+        }
+
+        private static void UnpackString(byte first,byte[] bytes,UnpackInformation info)
+        {
+            var length = first-128;
+            info.Values.Add(System.Text.Encoding.Default.GetString(bytes,info.Position,length));
+            info.Position+=length;
+        }
+        private static void UnpackSpecial(byte first,byte[] bytes,UnpackInformation info)
+        {
+            info.Values.Add(null);
+
+        }
+
+        private static void UnpackFloat(byte first,byte[] bytes, UnpackInformation info)
+        {
+            info.Values.Add(BitConverter.ToDouble(bytes.ToArray(),info.Position));
+            info.Position+=8;
+        }
+
+        private static void UnpackInt(byte first, byte[] bytes, UnpackInformation info)
         {
             if (first<=0x3f)
-                return (sbyte)first;
+                info.Values.Add((sbyte)first);
             else if (first<0x7b)
-                return (sbyte)63-first;
+                info.Values.Add((sbyte)63-first);
             else if (first==0xe8)
-                return (byte)bytes.ToArray()[1];
+                info.Values.Add((byte)bytes.ToArray()[1]);
             else if (first==0xe9)
-                return (short)BitConverter.ToInt16(bytes.ToArray(),1);
+            {
+                info.Values.Add((short)BitConverter.ToInt16(bytes.ToArray(),1));
+                info.Position+=2;
+            }
             else if (first==0xea)
-                return (int)BitConverter.ToInt32(bytes.ToArray(),1);
+            {
+                info.Values.Add((int)BitConverter.ToInt32(bytes.ToArray(),1));
+                info.Position+=4;
+            }
             else if (first==0xeb)
-                return (long)BitConverter.ToInt64(bytes.ToArray(),1);
-            throw new QUnpackException(first);
+            {
+                info.Values.Add((long)BitConverter.ToInt64(bytes.ToArray(),1));
+                info.Position+=8;
+            }
+            else
+                throw new QUnpackException(first);
         }
     }
 }
