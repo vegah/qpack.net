@@ -40,6 +40,19 @@ namespace test
             Assert.Equal("Iris",map["myname"]);
         }
 
+        [Fact]
+        public void Arrays()
+        {
+            var array = QPack.Unpack(new byte[]{252, 10, 20, 30, 40, 50, 60, 254}) as IList;
+            Assert.NotNull(array);
+            Assert.Equal(6,array.Count);
+            for (var i=0;i<6;i++)
+            {
+                Assert.Equal(((i+1)*10).ToString(),array[i]);
+            }
+        }
+
+
 
         [Fact]
         public void SpecialCase1()

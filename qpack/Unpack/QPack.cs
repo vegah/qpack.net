@@ -26,7 +26,29 @@ namespace Fantasista
                 UnpackString(first,bytes,info);
             else if (first>=0xf3 && first<=0xf8)
                 UnpackMap(first,bytes,info);
+            else if (first>=0xed && first<=0xfc)
+                UnpackArray(first,bytes,info);
+            else if (first == 0xfe || first==0xff)
+                UnpackSpecialValue(first,bytes,info);
             return info;
+        }
+
+        private static void UnpackSpecialValue(byte first,byte[] bytes,UnpackInformation info)
+        {
+            info.Values.Add(new SpecialValue(first));
+        }
+        private static void UnpackArray(byte first,byte[] bytes,UnpackInformation info)
+        {
+            var length = first-0xed;
+            var elementsRead = 0;
+            var array = new List<string>();
+            do
+            {
+                Unpack(bytes,info);
+                array.Add(info.Values.Last().ToString());
+            }
+            while ((length!=15 && elementsRead<length) || (length==15 && !(info.Values.Last() is SpecialValue && ((SpecialValue)info.Values.Last()).Value==0xfe)));
+            info.Values.Add(array.GetRange(0,array.Count-1));
         }
 
         private static void UnpackMap(byte first,byte[] bytes,UnpackInformation info)
