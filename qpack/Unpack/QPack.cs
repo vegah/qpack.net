@@ -46,9 +46,10 @@ namespace Fantasista
             {
                 Unpack(bytes,info);
                 array.Add(info.Values.Last().ToString());
+                elementsRead++;
             }
             while ((length!=15 && elementsRead<length) || (length==15 && !(info.Values.Last() is SpecialValue && ((SpecialValue)info.Values.Last()).Value==0xfe)));
-            info.Values.Add(array.GetRange(0,array.Count-1));
+            info.Values.Add(array.GetRange(0,length!=15?length:array.Count-1));
         }
 
         private static void UnpackMap(byte first,byte[] bytes,UnpackInformation info)

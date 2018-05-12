@@ -41,7 +41,7 @@ namespace test
         }
 
         [Fact]
-        public void Arrays()
+        public void LongArrays()
         {
             var array = QPack.Unpack(new byte[]{252, 10, 20, 30, 40, 50, 60, 254}) as IList;
             Assert.NotNull(array);
@@ -52,6 +52,17 @@ namespace test
             }
         }
 
+        [Fact]
+        public void ShortArrays()
+        {
+            var array = QPack.Unpack(new byte[]{242, 10, 20, 30, 40, 50}) as IList;
+            Assert.NotNull(array);
+            Assert.Equal(5,array.Count);
+            for (var i=0;i<5;i++)
+            {
+                Assert.Equal(((i+1)*10).ToString(),array[i]);
+            }
+        }
 
 
         [Fact]
