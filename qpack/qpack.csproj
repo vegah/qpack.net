@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>QPack</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Vegard Berget</Authors>
+    <Company>Fantasista</Company>
+    <PackageLicenseUrl>https://github.com/vegah/qpack.net/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/vegah/qpack.net</RepositoryUrl>
+    <PackageTags>qpack serialization</PackageTags>        
   </PropertyGroup>
 
 </Project>
